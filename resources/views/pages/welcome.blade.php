@@ -1811,6 +1811,9 @@
         Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
       </div>
     </div>
+<div class="text-center text-sm text-gray-600 mt-4">
+    👀 Visitors Count: {{ $visitorCount }}
+</div>
 
   </footer>
 

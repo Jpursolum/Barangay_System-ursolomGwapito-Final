@@ -31,31 +31,44 @@ use App\Models\SiteSetting;
 use App\Models\Skprogram;
 use App\Models\TouristSpot;
 use App\Models\PhotoRelease;
+use App\Models\VisitorCounter;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
-/* NOTE: Do Not Remove
-/ Livewire asset handling if using sub folder in domain
+/*
+|--------------------------------------------------------------------------
+| Livewire Custom Route Settings (if needed)
+|--------------------------------------------------------------------------
+| NOTE: Do not remove these if you're using Livewire on a subfolder-based domain
 */
 // Livewire::setUpdateRoute(function ($handle) {
 //     return Route::post(env('ASSET_PREFIX', '').'/livewire/update', $handle);
 // });
-
 // Livewire::setScriptRoute(function ($handle) {
 //     return Route::get(env('ASSET_PREFIX', '').'/livewire/livewire.js', $handle);
 // });
+
 /*
-/ END
+|--------------------------------------------------------------------------
+| HOMEPAGE ROUTE (Merged with Visitor Counter)
+|--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    // Fetch events
+    // 🔢 Visitor Counter Logic
+    $counter = VisitorCounter::first();
+    if (!$counter) {
+        $counter = VisitorCounter::create(['count' => 1]);
+    } else {
+        $counter->increment('count');
+    }
+
+    // 📅 Events
     $events = Event::orderBy('created_at', 'desc')->take(3)->get();
 
-    // Fetch demographic statistics
+    // 📊 Demographics
     $totalPopulation = BrgyInhabitant::count();
     $maleCount = BrgyInhabitant::where('sex', 'Male')->count();
     $femaleCount = BrgyInhabitant::where('sex', 'Female')->count();
-
     $ageGroups = [
         '0-17' => BrgyInhabitant::whereBetween('age', [0, 17])->count(),
         '18-35' => BrgyInhabitant::whereBetween('age', [18, 35])->count(),
@@ -63,10 +76,8 @@ Route::get('/', function () {
         '60+' => BrgyInhabitant::where('age', '>', 60)->count(),
     ];
 
-    // Fetch site settings
+    // ⚙️ Settings + Resources
     $siteSetting = SiteSetting::first();
-
-    // Fetch other models
     $touristSpots = TouristSpot::all();
     $restaurants = Restaurant::all();
     $Hotel = Hotel::all();
@@ -83,23 +94,14 @@ Route::get('/', function () {
     $PhotoRelease = PhotoRelease::all();
     $Speech = Speech::all();
     $Achievement = Achievement::all();
-    
-
-    // Fetch Barangay Officials
     $barangayOfficials = BrangayOfficials::all();
     $barangayHealthWorker = BHW::all();
-
-    // Fetch programs
     $programs = Program::all();
     $testimonials = Schoolar::all();
-
-    // Fetch announcements
     $announcements = Announcement::all();
-
-    // Fetch chairperson data
     $chairperson = BrgyCaptainCorner::latest()->first();
 
-    // Pass data to the view
+    // 📨 Return all to view
     return view('pages.welcome', compact(
         'events',
         'totalPopulation',
@@ -120,7 +122,6 @@ Route::get('/', function () {
         'testimonials',
         'announcements',
         'JobHiring',
-
         'chairperson',
         'brgyActivities',
         'barangayHealthWorker',
@@ -129,8 +130,15 @@ Route::get('/', function () {
         'PhotoRelease',
         'Speech',
         'Achievement',
-    ));
+        'counter' // ← if gusto mong ma-access ang full object
+    ))->with('visitorCount', $counter->count); // ← safe method to pass individual value
 });
+
+/*
+|--------------------------------------------------------------------------
+| OTHER ROUTES
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/send-test-email', function () {
     Mail::raw('This is a test email from Mailtrap!', function ($message) {
@@ -140,10 +148,10 @@ Route::get('/send-test-email', function () {
 
     return 'Test email sent!';
 });
+
 Route::get('/events/{id}', [EventController::class, 'show'])->name('event.details');
 Route::get('/barangay-captain/details', [brgycaptainController::class, 'showCaptainDetails'])->name('barangay.captain.details');
 Route::get('/visitors-lounge', [VisitorsController::class, 'showVisitors'])->name('visitors.lounge');
 Route::get('/citizens-charter', [CitezensCharterController::class, 'showIndex'])->name('citizens.charter');
-// Define a route that uses the controller
 Route::get('/sk-programs', [SkProgramController::class, 'index']);
 Route::get('/ordinance', [VisitorsController::class, 'ShowOrdinance'])->name('assoc.foundation');
