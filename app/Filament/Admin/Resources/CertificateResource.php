@@ -83,8 +83,8 @@ Forms\Components\TextInput::make('user_email')
 
                 // ✅ Payment instruction (QR + number)
                 Forms\Components\View::make('forms.components.payment-info')
-                    ->label('Payment Instructions')
-                    ->visible(fn () => Auth::user()->hasRole('brgyUser')),
+                    ->label('Payment Instructions'),
+
 
                 // ✅ Upload GCash Receipt
                 Forms\Components\FileUpload::make('payment_receipt')
@@ -94,8 +94,8 @@ Forms\Components\TextInput::make('user_email')
                     ->image()
                     ->enableOpen()
                     ->enableDownload()
-                    ->columnSpanFull()
-                    ->visible(fn () => Auth::user()->hasRole('brgyUser')),
+                    ->columnSpanFull(),
+
 
                 // ✅ Allow "Paid" status
                 Forms\Components\Select::make('payment_status')
