@@ -13,6 +13,8 @@ use Filament\Tables\Columns\BooleanColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Tabs;
+
 
 class BrgyInhabitantResource extends Resource
 {
@@ -22,203 +24,168 @@ class BrgyInhabitantResource extends Resource
 
     protected static ?string $navigationGroup = 'Inhabitants';
 
-    public static function form(Forms\Form $form): Forms\Form
+     public static function form(Forms\Form $form): Forms\Form
     {
         return $form
             ->schema([
+                // Basic Inhabitant Fields (as before)
                 Forms\Components\Hidden::make('user_id')->default(auth()->id()),
-                Forms\Components\TextInput::make('lastname')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('firstname')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('middlename')
-                    ->label('Middlename (optional)')
-                    ->maxLength(255),
-                    Forms\Components\TextInput::make('extensionName')
-                    ->label('Extension Name (optional)')
-                    ->maxLength(255),
-                    Forms\Components\TextInput::make('age')
-                    ->required()
-                    ->numeric()
-                    ->maxLength(3)
-                    ->disabled(), // Disable manual input for age
+
+                Forms\Components\TextInput::make('lastname')->required()->maxLength(255),
+                Forms\Components\TextInput::make('firstname')->required()->maxLength(255),
+                Forms\Components\TextInput::make('middlename')->label('Middlename (optional)')->maxLength(255),
+                Forms\Components\TextInput::make('extensionName')->label('Extension Name (optional)')->maxLength(255),
                 Forms\Components\DatePicker::make('birthdate')
                     ->required()
                     ->reactive()
                     ->afterStateUpdated(function (callable $set, $state) {
                         if ($state) {
                             try {
-                                // Parse the birthdate and calculate age
-                                $birthDate = \Carbon\Carbon::parse($state);
-                                $age = (int) $birthDate->diffInYears(now()); // Ensure age is an integer
-                                $set('age', $age); // Dynamically update the age field
+                                $age = intval(\Carbon\Carbon::parse($state)->diffInYears(now()));
+                                $set('age', $age);
                             } catch (\Exception $e) {
-                                // Handle parsing errors or invalid dates gracefully
                                 $set('age', null);
                             }
                         } else {
-                            // Reset age if birthdate is cleared
                             $set('age', null);
                         }
                     }),
-                
-                
-                Forms\Components\TextInput::make('purok')
-                    ->label('Purok')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('placeofbirth')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Select::make('sex')
-                    ->required()
-                    ->options([
-                        'Male' => 'Male',
-                        'Female' => 'Female',
-                    ]),
-                Forms\Components\Select::make('civilstatus')
-                    ->label('Civil Status')
-                    ->required()
-                    ->options([
-                        'Single' => 'Single',
-                        'Married' => 'Married',
-                        'Widowed' => 'Widowed',
-                        'Separated' => 'Separated',
-                        'Annulled' => 'Annulled',
-                        'Live-in' => 'Live-in',
-                    ]),
+
+
+                Forms\Components\TextInput::make('age')
+                    ->numeric()
+                    ->label('Age')
+                    ->disabled()
+                    ->dehydrated(true) // ← para di isave sa DB kung di kailangan
+    ->reactive(),       // ← para mag-refresh agad
+
+
+                Forms\Components\TextInput::make('purok')->required()->maxLength(255),
+                Forms\Components\TextInput::make('placeofbirth')->required()->maxLength(255),
+
+                Forms\Components\Select::make('sex')->required()->options(['Male' => 'Male', 'Female' => 'Female']),
+                Forms\Components\Select::make('civilstatus')->required()->options([
+                    'Single' => 'Single', 'Married' => 'Married', 'Widowed' => 'Widowed',
+                    'Separated' => 'Separated', 'Annulled' => 'Annulled', 'Live-in' => 'Live-in'
+                ]),
+
                 Forms\Components\Select::make('positioninFamily')
+                    ->label('Position in Family')
                     ->required()
                     ->options([
-                        'Head of the family' => 'Head of the family',
-                        'Wife' => 'Wife',
-                        'Husband' => 'Husband',  // Added "Husband"
-                        'Son' => 'Son',
-                        'Daughter' => 'Daughter',
-                        'Father' => 'Father',  // Added "Father"
-                        'Mother' => 'Mother',  // Added "Mother"
-                        'Grandfather' => 'Grandfather',  // Added "Grandfather"
-                        'Grandmother' => 'Grandmother',  // Added "Grandmother"
-
-                    ]),
-
-                Forms\Components\Select::make('citizenship')
-                    ->required()
-                    ->options([
-                        'Filipino' => 'Filipino',
-                        'Others' => 'Others',
+                        'Head of the family' => 'Head of the family', 'Wife' => 'Wife', 'Husband' => 'Husband',
+                        'Son' => 'Son', 'Daughter' => 'Daughter', 'Father' => 'Father', 'Mother' => 'Mother',
+                        'Grandfather' => 'Grandfather', 'Grandmother' => 'Grandmother',
                     ])
+                    ->reactive(),
+
+                Forms\Components\Select::make('citizenship')->required()
+                    ->options(['Filipino' => 'Filipino', 'Others' => 'Others'])
                     ->default('Filipino')
                     ->reactive()
-                    ->afterStateUpdated(function (callable $set, $state) {
-                        if ($state === 'Others') {
-                            // If 'Others' is selected, show the `other_citizenship` value as the selected citizenship.
-                            $set('citizenship', 'Others');
-                        }
-                    }),
+                    ->afterStateUpdated(fn ($set, $state) => $state === 'Others' ? $set('citizenship', 'Others') : null),
+
                 Forms\Components\TextInput::make('other_citizenship')
                     ->label('Please specify citizenship')
                     ->required()
-                    ->maxLength(255)
-                    ->visible(fn ($get) => $get('citizenship') === 'Others')
-                    ->reactive()
-                    ->afterStateUpdated(function (callable $set, $state) {
-                        if ($state) {
-                            // If 'other_citizenship' is provided, set it as the value of citizenship.
-                            $set('citizenship', $state);
-                        }
-                    }),
+                    ->visible(fn ($get) => $get('citizenship') === 'Others'),
 
-                Forms\Components\Select::make('educAttainment')
-                    ->label('Educational Attainment')
-                    ->required()
-                    ->options([
-                        'No Formal Education' => 'No Formal Education',
-                        'Elementary' => 'Elementary',
-                        'High School' => 'High School',
-                        'Vocational' => 'Vocational',
-                        'Undergraduate' => 'Undergraduate',
-                        'Graduate' => 'Graduate',
-                        'Postgraduate' => 'Postgraduate',
-                        'Others' => 'Others',
-                    ])
-                    ->reactive(),
+                Forms\Components\Select::make('educAttainment')->required()->options([
+                    'No Formal Education', 'Elementary', 'High School', 'Vocational',
+                    'Undergraduate', 'Graduate', 'Postgraduate', 'Others'
+                ])->reactive(),
+
                 Forms\Components\TextInput::make('other_educationalAtt')
                     ->label('Please specify Attainment')
                     ->required()
-                    ->maxLength(255)
                     ->visible(fn ($get) => $get('educAttainment') === 'Others'),
-                Forms\Components\TextInput::make('occupation')
-                    ->required()
-                    ->maxLength(255),
-                    Forms\Components\Select::make('livestock')
-                    ->label('Livestock')
-                    ->required()
+
+                Forms\Components\TextInput::make('occupation')->required()->maxLength(255),
+
+
+
+                Forms\Components\Select::make('ofw')->required()->options(['Yes' => 'Yes', 'No' => 'No']),
+                Forms\Components\Select::make('pwd')->required()->options(['Yes' => 'Yes', 'No' => 'No']),
+                Forms\Components\Select::make('registeredVoters')->required()->options(['Yes' => 'Yes', 'No' => 'No']),
+                Forms\Components\Select::make('IPmember')->label('IP member')->required()->options(['Yes' => 'Yes', 'No' => 'No']),
+
+                Forms\Components\TextInput::make('email')->label('Active Email Account')->email()->required(),
+
+                // 👇👇👇 FAMILY PROFILE FIELDS (Only for Head of Family)
+                Forms\Components\Section::make('Family Profile Details')
+                    ->visible(fn ($get) => $get('positioninFamily') === 'Head of the family')
+                    ->schema([
+                        Forms\Components\TextInput::make('religion')->label('Religion'),
+                Forms\Components\Select::make('livestock')->required()
                     ->options([
-                        'Chickens' => 'Chickens',
-                        'Ducks' => 'Ducks',
-                        'Pigs' => 'Pigs',
-                        'Cattle' => 'Cattle',
-                        'Goats' => 'Goats',
-                        'Carabaos' => 'Carabaos',
-                        'Tilapia' => 'Tilapia',
-                        'Bangus (Milkfish)' => 'Bangus (Milkfish)',
-                        'Others' => 'Others',
-                    ])
-                    ->reactive()
-                    ->afterStateUpdated(function (callable $set, $state) {
-                        if ($state === 'Others') {
-                            // If 'Others' is selected, show the `other_livestock` value as the selected livestock.
-                            $set('livestock', 'Others');
-                        }
-                    }),
+                        'Chickens', 'Ducks', 'Pigs', 'Cattle', 'Goats', 'Carabaos',
+                        'Tilapia', 'Bangus (Milkfish)', 'Others'
+                    ])->reactive(),
+
                 Forms\Components\TextInput::make('other_livestock')
                     ->label('Please specify livestock')
                     ->required()
-                    ->maxLength(255)
-                    ->visible(fn ($get) => $get('livestock') === 'Others')
-                    ->reactive()
-                    ->afterStateUpdated(function (callable $set, $state) {
-                        if ($state) {
-                            // If 'other_livestock' is provided, set it as the value of livestock.
-                            $set('livestock', $state);
-                        }
-                    }),
-                
-                Forms\Components\Select::make('ofw')
-                    ->required()
-                    ->options([
-                        'Yes' => 'Yes',
-                        'No' => 'No',
+                    ->visible(fn ($get) => $get('livestock') === 'Others'),
+                        Forms\Components\Select::make('monthlyincome')->label('Monthly Income')->required()->options([
+                            'Below 10,000', '10,000 - 20,000', '20,000 - 30,000', '30,000 - 40,000',
+                            '40,000 - 50,000', 'Above 50,000'
+                        ]),
+
+                        Forms\Components\Select::make('employment')->label('Employment')->required()->options([
+                            'Govt', 'Private', 'Self Employed', 'Un-Employed', 'Others'
+                        ])->reactive(),
+
+                        Forms\Components\TextInput::make('other_employment')->label('Specify Employment')
+                            ->required()
+                            ->visible(fn ($get) => $get('employment') === 'Others'),
+
+                        Forms\Components\Select::make('typeOfDwelling')->label('Type of Dwelling')->required()->options([
+                            'Concrete House', 'Wooden House', 'Bamboo House', 'Nipa Hut', 'Mixed Materials',
+                            'Apartment', 'Condominium', 'Shanty'
+                        ]),
+
+                        Forms\Components\Select::make('watersource')->label('Water Source')->required()->options([
+                            'Tap Water', 'Well', 'Spring', 'Rainwater', 'Others'
+                        ])->reactive(),
+
+                        Forms\Components\TextInput::make('other_watersource')->label('Specify Water Source')
+                            ->required()
+                            ->visible(fn ($get) => $get('watersource') === 'Others'),
+
+                        Forms\Components\Select::make('toiletFacility')->label('Toilet Facility')->required()->options([
+                            'Flush Toilet', 'Pit Latrine', 'Composting Toilet', 'Shared Facility', 'None', 'Others'
+                        ])->reactive(),
+
+                        Forms\Components\TextInput::make('other_toiletFacility')->label('Specify Toilet Facility')
+                            ->required()
+                            ->visible(fn ($get) => $get('toiletFacility') === 'Others'),
+
+                        Forms\Components\Select::make('4ps')->label('4Ps (Pantawid Pamilya)')->required()->options([
+                            'Yes' => 'Yes', 'No' => 'No'
+                        ]),
+                        Forms\Components\Select::make('houseMembers')
+                        ->label('Select Family Members')
+                        ->multiple()
+                        ->options(
+                            fn () => \App\Models\BrgyInhabitant::all()
+                                ->pluck('full_name', 'id') // make sure you have accessor in model
+                        )
+                        ->visible(fn ($get) => $get('positioninFamily') === 'Head of the family')
+                        ->reactive()
+                        ->afterStateUpdated(function (callable $set, $state) {
+                            if (in_array('select_all', $state)) {
+                                $set('houseMembers', \App\Models\BrgyInhabitant::pluck('id')->toArray());
+                            }
+                        })
+                        ->afterStateHydrated(function (Forms\Components\Select $component, $state) {
+                            $inhabitants = \App\Models\BrgyInhabitant::all();
+                            $component->options([
+                                'select_all' => 'Select All',
+                                ...$inhabitants->mapWithKeys(fn ($inhabitant) => [$inhabitant->id => "{$inhabitant->firstname} {$inhabitant->lastname}"])->toArray(),
+                            ]);
+                        }),
+
                     ]),
-                Forms\Components\Select::make('pwd')
-                    ->required()
-                    ->options([
-                        'Yes' => 'Yes',
-                        'No' => 'No',
-                    ]),
-                    Forms\Components\Select::make('registeredVoters')
-                    ->required()
-                    ->options([
-                        'Yes' => 'Yes',
-                        'No' => 'No',
-                    ]),
-                    Forms\Components\Select::make('IPmember')
-                    ->label('IP member')
-                    ->required()
-                    ->options([
-                        'Yes' => 'Yes',
-                        'No' => 'No',
-                    ]),
-                    
-                
-                Forms\Components\TextInput::make('email')
-                    ->label('Active Email Account')
-                    ->email()
-                    ->required()
-                    ->maxLength(255),
             ]);
     }
 
