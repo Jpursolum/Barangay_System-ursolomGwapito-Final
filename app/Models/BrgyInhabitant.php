@@ -41,6 +41,19 @@ class BrgyInhabitant extends Model
         'livestock',
         'extensionName',
         'IPmember',
+        'family_code',
+        'monthlyincome',
+        'religion',
+        'employment',
+        'other_employment',
+        'typeOfDwelling',
+        'watersource',
+        'other_watersource',
+        'toiletFacility',
+        'other_toiletFacility',
+        '4ps',
+        'is_approved',
+        'is_active',
     ];
 
     // Relationships
@@ -71,4 +84,12 @@ class BrgyInhabitant extends Model
     {
         $this->attributes['birthdate'] = \Carbon\Carbon::parse($value);
     }
+public function familyMembers()
+{
+    return self::where('family_code', $this->family_code)
+        ->where('id', '!=', $this->id) // exclude self
+        ->get();
+}
+
+
 }

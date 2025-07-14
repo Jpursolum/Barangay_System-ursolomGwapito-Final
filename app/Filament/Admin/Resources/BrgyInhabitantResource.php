@@ -14,7 +14,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Tabs;
-
+use Filament\Tables\Filters\Components\TextInput; // make sure naka-import ito
 
 class BrgyInhabitantResource extends Resource
 {
@@ -66,6 +66,10 @@ class BrgyInhabitantResource extends Resource
                     ->dehydrated(true) // ← para di isave sa DB kung di kailangan
     ->reactive(),       // ← para mag-refresh agad
 
+                Forms\Components\TextInput::make('family_code')
+                    ->label('Enter Family Code')
+                    ->required(fn ($get) => $get('positioninFamily') !== 'Head of the family')
+                    ->visible(fn ($get) => $get('positioninFamily') !== 'Head of the family'),
 
                 Forms\Components\Select::make('purok')
                     ->label('Purok')
@@ -162,6 +166,15 @@ class BrgyInhabitantResource extends Resource
                 Forms\Components\TextInput::make('email')->label('Active Email Account')->email()->required(),
 
                 // 👇👇👇 FAMILY PROFILE FIELDS (Only for Head of Family)
+Forms\Components\TextInput::make('family_code')
+    ->label('Family Code')
+    ->default(fn () => 'FMLY-' . now()->format('Ymd') . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT))
+    ->readOnly()
+    ->dehydrated() // ← para masave sa DB
+    ->required()
+    ->visible(fn ($get) => $get('positioninFamily') === 'Head of the family'),
+
+
                 Forms\Components\Section::make('Family Profile Details')
                     ->visible(fn ($get) => $get('positioninFamily') === 'Head of the family')
                     ->schema([
@@ -248,27 +261,7 @@ class BrgyInhabitantResource extends Resource
                         Forms\Components\Select::make('4ps')->label('4Ps (Pantawid Pamilya)')->required()->options([
                             'Yes' => 'Yes', 'No' => 'No'
                         ]),
-                        Forms\Components\Select::make('houseMembers')
-                        ->label('Select Family Members')
-                        ->multiple()
-                        ->options(
-                            fn () => \App\Models\BrgyInhabitant::all()
-                                ->pluck('full_name', 'id') // make sure you have accessor in model
-                        )
-                        ->visible(fn ($get) => $get('positioninFamily') === 'Head of the family')
-                        ->reactive()
-                        ->afterStateUpdated(function (callable $set, $state) {
-                            if (in_array('select_all', $state)) {
-                                $set('houseMembers', \App\Models\BrgyInhabitant::pluck('id')->toArray());
-                            }
-                        })
-                        ->afterStateHydrated(function (Forms\Components\Select $component, $state) {
-                            $inhabitants = \App\Models\BrgyInhabitant::all();
-                            $component->options([
-                                'select_all' => 'Select All',
-                                ...$inhabitants->mapWithKeys(fn ($inhabitant) => [$inhabitant->id => "{$inhabitant->firstname} {$inhabitant->lastname}"])->toArray(),
-                            ]);
-                        }),
+
 
                     ]),
             ]);
@@ -320,7 +313,17 @@ class BrgyInhabitantResource extends Resource
                             ->placeholder('Select Inhabitant Status'),
                     ])
                     ->label('Filter by Inhabitant Status'),
-
+                        Filter::make('Family Code')
+                            ->form([
+                                Forms\Components\TextInput::make('family_code')
+                                    ->label('Family Code'),
+                            ])
+                            ->query(function (Builder $query, array $data) {
+                                if (!empty($data['family_code'])) {
+                                    $query->where('family_code', $data['family_code']);
+                                }
+                            })
+                            ->label('Filter by Family Code'),
                 Filter::make('pwd')
                     ->query(fn (Builder $query) => $query->where('pwd', 'Yes')),
                 Filter::make('ofw')
