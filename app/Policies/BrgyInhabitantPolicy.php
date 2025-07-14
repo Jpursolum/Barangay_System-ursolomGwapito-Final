@@ -17,16 +17,20 @@ class BrgyInhabitantPolicy
     {
         // Add your condition if necessary, e.g., only allowing approved records
         return $user->can('view_any_brgy::inhabitant');
+        return !$user->brgyInhabitant()->exists();
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, BrgyInhabitant $brgyInhabitant): bool
-    {
-        // Check if the user has permission and if the record is approved
-        return $user->can('view_brgy::inhabitant') && $brgyInhabitant->approved;
-    }
+public function view(User $user, BrgyInhabitant $brgyInhabitant): bool
+{
+    // Allow if admin OR the owner of the record
+    return $user->hasRole('super_admin') ||
+           $user->hasRole('brgySecretary') ||
+           $user->id === $brgyInhabitant->user_id;
+}
+
 
     /**
      * Determine whether the user can create models.
@@ -39,10 +43,13 @@ class BrgyInhabitantPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, BrgyInhabitant $brgyInhabitant): bool
-    {
-        return $user->can('update_brgy::inhabitant');
-    }
+public function update(User $user, BrgyInhabitant $brgyInhabitant): bool
+{
+    return $user->hasRole('super_admin') ||
+           $user->hasRole('brgySecretary') ||
+           $user->id === $brgyInhabitant->user_id;
+}
+
 
     /**
      * Determine whether the user can delete the model.

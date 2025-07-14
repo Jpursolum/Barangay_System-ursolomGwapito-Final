@@ -86,4 +86,13 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         return $this->hasMany(Task::class);
     }
+public function brgyInhabitant()
+{
+    return $this->hasOne(\App\Models\BrgyInhabitant::class);
+}
+
+    public function hasBrgyInhabitant(): bool
+    {
+        return $this->brgyInhabitant()->exists();
+    }
 }

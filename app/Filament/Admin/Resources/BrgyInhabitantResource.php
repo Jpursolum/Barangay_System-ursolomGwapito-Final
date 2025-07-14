@@ -37,7 +37,11 @@ class BrgyInhabitantResource extends Resource
                 Forms\Components\TextInput::make('extensionName')->label('Extension Name (optional)')->maxLength(255),
                 Forms\Components\DatePicker::make('birthdate')
                     ->required()
+                    ->displayFormat('Y-m-d')
+                    ->format('Y-m-d')
+                    ->maxDate(now())
                     ->reactive()
+                    ->lazy() // ← 👈 this is the magic!
                     ->afterStateUpdated(function (callable $set, $state) {
                         if ($state) {
                             try {
@@ -52,6 +56,9 @@ class BrgyInhabitantResource extends Resource
                     }),
 
 
+
+
+
                 Forms\Components\TextInput::make('age')
                     ->numeric()
                     ->label('Age')
@@ -60,11 +67,31 @@ class BrgyInhabitantResource extends Resource
     ->reactive(),       // ← para mag-refresh agad
 
 
-                Forms\Components\TextInput::make('purok')->required()->maxLength(255),
+                Forms\Components\Select::make('purok')
+                    ->label('Purok')
+                    ->options([
+                        'Purok 1' => 'Purok 1',
+                        'Purok 2' => 'Purok 2',
+                        'Purok 3' => 'Purok 3',
+                        'Purok 4' => 'Purok 4',
+                        'Purok 5' => 'Purok 5',
+                        'Purok 6' => 'Purok 6',
+                        'Others' => 'Others',
+                    ])
+                    ->required()
+                    ->reactive(), // ← para ma-update agad sa frontend
+
+                Forms\Components\TextInput::make('other_purok')
+                    ->label('Please specify Purok')
+                    ->required()
+                    ->visible(fn ($get) => $get('purok') === 'Others'), // ← condition kung kailan siya lalabas
+
                 Forms\Components\TextInput::make('placeofbirth')->required()->maxLength(255),
 
                 Forms\Components\Select::make('sex')->required()->options(['Male' => 'Male', 'Female' => 'Female']),
-                Forms\Components\Select::make('civilstatus')->required()->options([
+                Forms\Components\Select::make('civilstatus')
+                ->required()
+                ->options([
                     'Single' => 'Single', 'Married' => 'Married', 'Widowed' => 'Widowed',
                     'Separated' => 'Separated', 'Annulled' => 'Annulled', 'Live-in' => 'Live-in'
                 ]),
@@ -90,19 +117,42 @@ class BrgyInhabitantResource extends Resource
                     ->required()
                     ->visible(fn ($get) => $get('citizenship') === 'Others'),
 
-                Forms\Components\Select::make('educAttainment')->required()->options([
-                    'No Formal Education', 'Elementary', 'High School', 'Vocational',
-                    'Undergraduate', 'Graduate', 'Postgraduate', 'Others'
-                ])->reactive(),
+                Forms\Components\Select::make('educAttainment')
+                    ->label('Educational Attainment')
+                    ->options([
+                        'No Formal Education' => 'No Formal Education',
+                        'Elementary' => 'Elementary',
+                        'High School' => 'High School',
+                        'Vocational' => 'Vocational',
+                        'Undergraduate' => 'Undergraduate',
+                        'Graduate' => 'Graduate',
+                        'Postgraduate' => 'Postgraduate',
+                        'Others' => 'Others',
+                    ])
+                    ->required()
+                    ->reactive(),
 
                 Forms\Components\TextInput::make('other_educationalAtt')
                     ->label('Please specify Attainment')
-                    ->required()
+                    ->required(fn ($get) => $get('educAttainment') === 'Others') // ← required *only* if "Others"
                     ->visible(fn ($get) => $get('educAttainment') === 'Others'),
+                Forms\Components\Select::make('occupation')
+                    ->label('Occupation')
+                    ->required()
+                    ->options([
+                        'Teacher' => 'Teacher',
+                        'Farmer' => 'Farmer',
+                        'Laborer' => 'Laborer',
+                        'Fisherman' => 'Fisherman',
+                        'Vendor' => 'Vendor',
+                        'Others' => 'Others'
+                    ])
+                    ->reactive(),
 
-                Forms\Components\TextInput::make('occupation')->required()->maxLength(255),
-
-
+                Forms\Components\TextInput::make('other_occupation')
+                    ->label('Please specify Occupation')
+                    ->required(fn ($get) => $get('occupation') === 'Others')
+                    ->visible(fn ($get) => $get('occupation') === 'Others'),
 
                 Forms\Components\Select::make('ofw')->required()->options(['Yes' => 'Yes', 'No' => 'No']),
                 Forms\Components\Select::make('pwd')->required()->options(['Yes' => 'Yes', 'No' => 'No']),
@@ -116,20 +166,45 @@ class BrgyInhabitantResource extends Resource
                     ->visible(fn ($get) => $get('positioninFamily') === 'Head of the family')
                     ->schema([
                         Forms\Components\TextInput::make('religion')->label('Religion'),
-                Forms\Components\Select::make('livestock')->required()
-                    ->options([
-                        'Chickens', 'Ducks', 'Pigs', 'Cattle', 'Goats', 'Carabaos',
-                        'Tilapia', 'Bangus (Milkfish)', 'Others'
-                    ])->reactive(),
+                        Forms\Components\Select::make('livestock')
+                            ->label('Livestock')
+                            ->required()
+                            ->options([
+                                'Chickens' => 'Chickens',
+                                'Ducks' => 'Ducks',
+                                'Pigs' => 'Pigs',
+                                'Cattle' => 'Cattle',
+                                'Goats' => 'Goats',
+                                'Carabaos' => 'Carabaos',
+                                'Tilapia' => 'Tilapia',
+                                'Bangus (Milkfish)' => 'Bangus (Milkfish)',
+                                'Others' => 'Others'
+                            ])
+                            ->reactive(),
 
-                Forms\Components\TextInput::make('other_livestock')
-                    ->label('Please specify livestock')
-                    ->required()
-                    ->visible(fn ($get) => $get('livestock') === 'Others'),
-                        Forms\Components\Select::make('monthlyincome')->label('Monthly Income')->required()->options([
-                            'Below 10,000', '10,000 - 20,000', '20,000 - 30,000', '30,000 - 40,000',
-                            '40,000 - 50,000', 'Above 50,000'
-                        ]),
+                        Forms\Components\TextInput::make('other_livestock')
+                            ->label('Please specify Livestock')
+                            ->required(fn ($get) => $get('livestock') === 'Others')
+                            ->visible(fn ($get) => $get('livestock') === 'Others'),
+
+                        Forms\Components\Select::make('monthlyincome')
+                            ->label('Monthly Income')
+                            ->required()
+                            ->options([
+                                'Below 10,000' => 'Below 10,000',
+                                '10,000 - 20,000' => '10,000 - 20,000',
+                                '20,000 - 30,000' => '20,000 - 30,000',
+                                '30,000 - 40,000' => '30,000 - 40,000',
+                                '40,000 - 50,000' => '40,000 - 50,000',
+                                'Above 50,000' => 'Above 50,000',
+                                'Others' => 'Others'
+                            ])
+                            ->reactive(),
+
+                        Forms\Components\TextInput::make('other_monthlyincome')
+                            ->label('Please specify Monthly Income')
+                            ->required(fn ($get) => $get('monthlyincome') === 'Others')
+                            ->visible(fn ($get) => $get('monthlyincome') === 'Others'),
 
                         Forms\Components\Select::make('employment')->label('Employment')->required()->options([
                             'Govt', 'Private', 'Self Employed', 'Un-Employed', 'Others'
@@ -144,13 +219,23 @@ class BrgyInhabitantResource extends Resource
                             'Apartment', 'Condominium', 'Shanty'
                         ]),
 
-                        Forms\Components\Select::make('watersource')->label('Water Source')->required()->options([
-                            'Tap Water', 'Well', 'Spring', 'Rainwater', 'Others'
-                        ])->reactive(),
-
-                        Forms\Components\TextInput::make('other_watersource')->label('Specify Water Source')
+                       Forms\Components\Select::make('watersource')
+                            ->label('Water Source')
                             ->required()
+                            ->options([
+                                'Tap Water' => 'Tap Water',
+                                'Well' => 'Well',
+                                'Spring' => 'Spring',
+                                'Rainwater' => 'Rainwater',
+                                'Others' => 'Others',
+                            ])
+                            ->reactive(),
+
+                        Forms\Components\TextInput::make('other_watersource')
+                            ->label('Please specify Water Source')
+                            ->required(fn ($get) => $get('watersource') === 'Others')
                             ->visible(fn ($get) => $get('watersource') === 'Others'),
+                        
 
                         Forms\Components\Select::make('toiletFacility')->label('Toilet Facility')->required()->options([
                             'Flush Toilet', 'Pit Latrine', 'Composting Toilet', 'Shared Facility', 'None', 'Others'
@@ -388,26 +473,18 @@ class BrgyInhabitantResource extends Resource
             ]);
     }
 
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
+public static function getEloquentQuery(): Builder
+{
+    $query = parent::getEloquentQuery();
 
-        if (auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('brgySecretary')) {
-            // Show all records, approved or not, for super_admin and brgySecretary
-            return $query;
-        }
-
-        // Show only approved records for other users
-        $query = $query->where('is_approved', true);
-
-        // Check if citizenship is 'Others' and filter by 'other_citizenship'
-        $citizenshipFilter = request()->input('citizenship'); // Get citizenship filter from request
-        if ($citizenshipFilter === 'Others') {
-            $query = $query->whereNotNull('other_citizenship'); // Show records with a non-null 'other_citizenship'
-        }
-
-        return $query;
+    // If NOT admin or secretary → show only their own record
+    if (!auth()->user()->hasRole('super_admin') && !auth()->user()->hasRole('brgySecretary')) {
+        $query->where('user_id', auth()->id());
     }
+
+    return $query;
+}
+
 
     public static function getRelations(): array
     {
