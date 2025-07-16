@@ -14,7 +14,7 @@ class SchoolarResource extends Resource
 {
     protected static ?string $model = Schoolar::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
     protected static ?string $navigationGroup = 'AGKAYKAYSA';
 

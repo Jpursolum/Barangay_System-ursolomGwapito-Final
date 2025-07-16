@@ -86,10 +86,10 @@ class BrgyInhabitant extends Model
     }
 public function familyMembers()
 {
-    return self::where('family_code', $this->family_code)
-        ->where('id', '!=', $this->id) // exclude self
-        ->get();
+    return $this->hasMany(self::class, 'family_code', 'family_code')
+        ->where('positioninFamily', '!=', 'Head of the family');
 }
+
 
 
 }

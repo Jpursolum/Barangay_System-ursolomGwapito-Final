@@ -14,9 +14,9 @@ class IncidentReportResource extends Resource
 {
     protected static ?string $model = IncidentReport::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-flag';
 
-    protected static ?string $navigationGroup = 'Administration';
+    protected static ?string $navigationGroup = 'Incident Reports Management';
 
     protected static ?string $pluralModelLabel = 'Incident Reports';
 

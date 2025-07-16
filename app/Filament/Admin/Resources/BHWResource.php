@@ -14,11 +14,11 @@ class BHWResource extends Resource
 {
     protected static ?string $model = BHW::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-library';
 
-    protected static ?string $navigationGroup = 'Administration';
+    protected static ?string $navigationGroup = 'Barangay Management';
 
-    protected static ?string $pluralModelLabel = 'Brgy Health Worker';
+    protected static ?string $pluralModelLabel = 'Barangay Health Worker';
 
     public static function form(Form $form): Form
     {

@@ -32,6 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->spa(true)
             ->login()
+            ->authGuard('web') // Make sure merong guard
             ->registration()
             ->emailVerification()
             // ->databaseNotifications()

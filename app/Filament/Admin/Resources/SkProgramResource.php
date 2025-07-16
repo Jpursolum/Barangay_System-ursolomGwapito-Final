@@ -14,9 +14,9 @@ class SkProgramResource extends Resource
 {
     protected static ?string $model = SkProgram::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-library';
 
-    protected static ?string $navigationGroup = 'Administration';
+    protected static ?string $navigationGroup = 'Barangay Management';
 
     public static function form(Form $form): Form
     {

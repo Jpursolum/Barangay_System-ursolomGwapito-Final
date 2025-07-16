@@ -15,9 +15,9 @@ class BrangayOfficialsResource extends Resource // "Brangay" as requested
 {
     protected static ?string $model = BrangayOfficials::class; // "Brangay" as requested
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-library';
 
-    protected static ?string $navigationGroup = 'Administration';
+    protected static ?string $navigationGroup = 'Barangay Management';
 
     protected static ?string $pluralModelLabel = 'Barangay Officials';
 

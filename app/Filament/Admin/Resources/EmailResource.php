@@ -18,9 +18,9 @@ class EmailResource extends Resource
 {
     protected static ?string $model = Email::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-inbox-arrow-down';
 
-    protected static ?string $navigationGroup = 'Administration';
+    protected static ?string $navigationGroup = 'Email Management';
 
     public static function form(Form $form): Form
     {
