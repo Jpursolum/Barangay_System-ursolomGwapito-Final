@@ -66,8 +66,8 @@ class FamilyProfileResource extends Resource
                         'Above 50,000' => 'Above 50,000',
                     ])
                     ->reactive(),
-                
-                    Forms\Components\Select::make('employment')
+
+                Forms\Components\Select::make('employment')
                     ->required()
                     ->options([
                         'Govt' => 'Govt',
@@ -95,7 +95,7 @@ class FamilyProfileResource extends Resource
                             $set('employment', $state);
                         }
                     }),
-                
+
                 Forms\Components\Select::make('typeOfDwelling')
                     ->label('Type of Dwelling')
                     ->required()
@@ -110,7 +110,7 @@ class FamilyProfileResource extends Resource
                         'Shanty' => 'Shanty',
                     ])
                     ->reactive(),
-                    Forms\Components\Select::make('watersource')
+                Forms\Components\Select::make('watersource')
                     ->required()
                     ->options([
                         'Tap Water' => 'Tap Water',
@@ -136,7 +136,7 @@ class FamilyProfileResource extends Resource
                             $set('watersource', $state);
                         }
                     }),
-                
+
                 Forms\Components\Select::make('toiletFacility')
                     ->required()
                     ->options([
@@ -164,7 +164,7 @@ class FamilyProfileResource extends Resource
                             $set('toiletFacility', $state);
                         }
                     }),
-                
+
                 Forms\Components\Select::make('4ps')
                     ->label('4Ps (Pantawid Pamilyang Pilipino Program)')
                     ->required()
@@ -284,8 +284,7 @@ class FamilyProfileResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-
-                    Tables\Columns\TextColumn::make('employment')
+                Tables\Columns\TextColumn::make('employment')
                     ->label('Employment')
                     ->sortable()
                     ->searchable(),
@@ -319,7 +318,7 @@ class FamilyProfileResource extends Resource
                     ->label('Approved')
                     ->sortable(),
             ])
-            
+
             ->filters([
                 Filter::make('Pending Approval')
                     ->query(fn (Builder $query) => $query->where('is_approved', false)),
@@ -345,64 +344,64 @@ class FamilyProfileResource extends Resource
                             ])
                             ->placeholder('Select Income Range'),
                     ]),
-                      // Employment Filter
-    Filter::make('Employment')
-    ->query(function (Builder $query, array $data) {
-        if (! empty($data['employment'])) {
-            $query->where('employment', $data['employment']);
-        }
-    })
-    ->form([
-        Forms\Components\Select::make('employment')
-            ->label('Employment')
-            ->options([
-                'Govt' => 'Govt',
-                'Private' => 'Private',
-                'Self Employed' => 'Self Employed',
-                'Un-Employed' => 'Un-Employed',
-                'Others' => 'Others',
-            ])
-            ->placeholder('All Employment Types'),
-    ]),
-     // Toilet Facility Filter
-     Filter::make('Toilet Facility')
-     ->query(function (Builder $query, array $data) {
-         if (! empty($data['toiletFacility'])) {
-             $query->where('toiletFacility', $data['toiletFacility']);
-         }
-     })
-     ->form([
-         Forms\Components\Select::make('toiletFacility')
-             ->label('Toilet Facility')
-             ->options([
-                 'Flush Toilet' => 'Flush Toilet',
-                 'Pit Latrine' => 'Pit Latrine',
-                 'Composting Toilet' => 'Composting Toilet',
-                 'Shared Facility' => 'Shared Facility',
-                 'None' => 'None',
-                 'Others' => 'Others',
-             ])
-             ->placeholder('All Facilities'),
-     ]),
-      // Water Source Filter
-    Filter::make('Water Source')
-    ->query(function (Builder $query, array $data) {
-        if (! empty($data['watersource'])) {
-            $query->where('watersource', $data['watersource']);
-        }
-    })
-    ->form([
-        Forms\Components\Select::make('watersource')
-            ->label('Water Source')
-            ->options([
-                'Tap Water' => 'Tap Water',
-                'Well' => 'Well',
-                'Spring' => 'Spring',
-                'Rainwater' => 'Rainwater',
-                'Others' => 'Others',
-            ])
-            ->placeholder('All Water Sources'),
-    ]),
+                // Employment Filter
+                Filter::make('Employment')
+                    ->query(function (Builder $query, array $data) {
+                        if (! empty($data['employment'])) {
+                            $query->where('employment', $data['employment']);
+                        }
+                    })
+                    ->form([
+                        Forms\Components\Select::make('employment')
+                            ->label('Employment')
+                            ->options([
+                                'Govt' => 'Govt',
+                                'Private' => 'Private',
+                                'Self Employed' => 'Self Employed',
+                                'Un-Employed' => 'Un-Employed',
+                                'Others' => 'Others',
+                            ])
+                            ->placeholder('All Employment Types'),
+                    ]),
+                // Toilet Facility Filter
+                Filter::make('Toilet Facility')
+                    ->query(function (Builder $query, array $data) {
+                        if (! empty($data['toiletFacility'])) {
+                            $query->where('toiletFacility', $data['toiletFacility']);
+                        }
+                    })
+                    ->form([
+                        Forms\Components\Select::make('toiletFacility')
+                            ->label('Toilet Facility')
+                            ->options([
+                                'Flush Toilet' => 'Flush Toilet',
+                                'Pit Latrine' => 'Pit Latrine',
+                                'Composting Toilet' => 'Composting Toilet',
+                                'Shared Facility' => 'Shared Facility',
+                                'None' => 'None',
+                                'Others' => 'Others',
+                            ])
+                            ->placeholder('All Facilities'),
+                    ]),
+                // Water Source Filter
+                Filter::make('Water Source')
+                    ->query(function (Builder $query, array $data) {
+                        if (! empty($data['watersource'])) {
+                            $query->where('watersource', $data['watersource']);
+                        }
+                    })
+                    ->form([
+                        Forms\Components\Select::make('watersource')
+                            ->label('Water Source')
+                            ->options([
+                                'Tap Water' => 'Tap Water',
+                                'Well' => 'Well',
+                                'Spring' => 'Spring',
+                                'Rainwater' => 'Rainwater',
+                                'Others' => 'Others',
+                            ])
+                            ->placeholder('All Water Sources'),
+                    ]),
 
                 // Filtering for Type of Dwelling
                 Filter::make('Type of Dwelling')

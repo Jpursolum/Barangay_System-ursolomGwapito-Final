@@ -23,8 +23,7 @@ class FamilyMembersRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('lastname')->label('Last Name'),
                 Tables\Columns\TextColumn::make('positioninFamily')->label('Position in Family'),
                 Tables\Columns\TextColumn::make('birthdate')->date()->label('Birthdate'),
-                
-                
+
             ])
             ->filters([])
             ->headerActions([]) // optional: disable Create

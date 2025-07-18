@@ -17,8 +17,11 @@ class BrgyHeadOfFamilyResource extends Resource
     protected static ?string $model = BrgyInhabitant::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
+
     protected static ?string $navigationLabel = 'Records of Barangay Head of Family';
+
     protected static ?string $pluralModelLabel = 'Barangay Head of the Family';
+
     protected static ?string $navigationGroup = 'Inhabitant Management';
 
     // Only super_admin and brgySecretary can see this in the sidebar
@@ -68,7 +71,7 @@ class BrgyHeadOfFamilyResource extends Resource
                             ->placeholder('Select Purok'),
                     ])
                     ->query(function (Builder $query, array $data) {
-                        if (!empty($data['purok'])) {
+                        if (! empty($data['purok'])) {
                             $query->where('purok', $data['purok']);
                         }
                     }),

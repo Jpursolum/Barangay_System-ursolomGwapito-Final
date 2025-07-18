@@ -84,12 +84,10 @@ class BrgyInhabitant extends Model
     {
         $this->attributes['birthdate'] = \Carbon\Carbon::parse($value);
     }
-public function familyMembers()
-{
-    return $this->hasMany(self::class, 'family_code', 'family_code')
-        ->where('positioninFamily', '!=', 'Head of the family');
-}
 
-
-
+    public function familyMembers()
+    {
+        return $this->hasMany(self::class, 'family_code', 'family_code')
+            ->where('positioninFamily', '!=', 'Head of the family');
+    }
 }

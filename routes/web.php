@@ -5,6 +5,7 @@ use App\Http\Controllers\CitezensCharterController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\SkProgramController;
 use App\Http\Controllers\VisitorsController;
+use App\Models\Achievement;
 use App\Models\Announcement;
 use App\Models\BHW;
 use App\Models\BrangayOfficials;
@@ -12,7 +13,6 @@ use App\Models\brgyActivity;
 use App\Models\BrgyCaptainCorner;
 use App\Models\brgyFestival;
 use App\Models\BrgyInhabitant;
-use App\Models\Chairperson;
 use App\Models\Church;
 use App\Models\Event;
 use App\Models\Hospital;
@@ -21,16 +21,15 @@ use App\Models\JobHiring;
 use App\Models\LatestEvents;
 use App\Models\LatestNews;
 use App\Models\Park;
+use App\Models\PhotoRelease;
 use App\Models\Program;
 use App\Models\Restaurant;
 use App\Models\School;
 use App\Models\Schoolar;
-use App\Models\Speech;
-use App\Models\Achievement;
 use App\Models\SiteSetting;
 use App\Models\Skprogram;
+use App\Models\Speech;
 use App\Models\TouristSpot;
-use App\Models\PhotoRelease;
 use App\Models\VisitorCounter;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
@@ -56,7 +55,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     // 🔢 Visitor Counter Logic
     $counter = VisitorCounter::first();
-    if (!$counter) {
+    if (! $counter) {
         $counter = VisitorCounter::create(['count' => 1]);
     } else {
         $counter->increment('count');

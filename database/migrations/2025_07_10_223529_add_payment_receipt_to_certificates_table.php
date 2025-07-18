@@ -9,12 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up()
-{
-    Schema::table('certificates', function (Blueprint $table) {
-        $table->string('payment_receipt')->nullable();
-    });
-}
+    public function up()
+    {
+        Schema::table('certificates', function (Blueprint $table) {
+            $table->string('payment_receipt')->nullable();
+        });
+    }
 
     /**
      * Reverse the migrations.

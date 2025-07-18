@@ -53,6 +53,10 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 \Awcodes\Overlook\Widgets\OverlookWidget::class,
             ])
+            ->widgets([
+                \App\Filament\Admin\Widgets\GenderStatsWidget::class,
+            ])
+
             ->plugins([
                 \Jeffgreco13\FilamentBreezy\BreezyCore::make()
                     ->myProfile(
@@ -74,7 +78,9 @@ class AdminPanelProvider extends PanelProvider
                         'sm' => 2,
                         'lg' => 2,
                     ]),
-
+                FilamentSpatieLaravelBackupPlugin::make()
+                     ->authorize(fn (): bool => auth()->user()->email === 'admin@admin.com'),
+            
                 \Hasnayeen\Themes\ThemesPlugin::make(),
 
                 \Awcodes\LightSwitch\LightSwitchPlugin::make()
@@ -96,6 +102,7 @@ class AdminPanelProvider extends PanelProvider
 
                 \Njxqlus\FilamentProgressbar\FilamentProgressbarPlugin::make()->color('#29b'),
             ])
+
             ->navigationGroups([
 
                 NavigationGroup::make()

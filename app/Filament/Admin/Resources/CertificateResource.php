@@ -6,7 +6,6 @@ use App\Filament\Admin\Resources\CertificateResource\Pages;
 use App\Mail\CertificateApprovedMail;
 use App\Mail\CertificateCancelledMail;
 use App\Models\Certificate;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -23,27 +22,30 @@ use Illuminate\Support\Facades\Mail;
 class CertificateResource extends Resource
 {
     protected static ?string $model = Certificate::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-document';
+
     protected static ?string $navigationGroup = 'Certificate & Clearance';
+
+    protected static ?int $navigationSort = -7;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-Forms\Components\Hidden::make('user_id')
-    ->default(fn () => auth()->id())
-    ->required(),
+                Forms\Components\Hidden::make('user_id')
+                    ->default(fn () => auth()->id())
+                    ->required(),
 
-Forms\Components\TextInput::make('user_name')
-    ->label('Name')
-    ->default(fn () => auth()->user()?->name)
-    ->disabled(),
+                Forms\Components\TextInput::make('user_name')
+                    ->label('Name')
+                    ->default(fn () => auth()->user()?->name)
+                    ->disabled(),
 
-Forms\Components\TextInput::make('user_email')
-    ->label('Email')
-    ->default(fn () => auth()->user()?->email)
-    ->disabled(),
-
+                Forms\Components\TextInput::make('user_email')
+                    ->label('Email')
+                    ->default(fn () => auth()->user()?->email)
+                    ->disabled(),
 
                 Forms\Components\Select::make('certificate_type')
                     ->label('Certificate Type')
@@ -85,7 +87,6 @@ Forms\Components\TextInput::make('user_email')
                 Forms\Components\View::make('forms.components.payment-info')
                     ->label('Payment Instructions'),
 
-
                 // ✅ Upload GCash Receipt
                 Forms\Components\FileUpload::make('payment_receipt')
                     ->label('GCash Receipt')
@@ -95,7 +96,6 @@ Forms\Components\TextInput::make('user_email')
                     ->enableOpen()
                     ->enableDownload()
                     ->columnSpanFull(),
-
 
                 // ✅ Allow "Paid" status
                 Forms\Components\Select::make('payment_status')
@@ -164,9 +164,8 @@ Forms\Components\TextInput::make('user_email')
                     ->falseIcon('heroicon-o-x-circle'),
                 TextColumn::make('payment_receipt')
                     ->label('Receipt')
-                    ->formatStateUsing(fn ($state) =>
-                        $state
-                            ? '<a href="' . asset('storage/' . $state) . '" target="_blank">View</a>'
+                    ->formatStateUsing(fn ($state) => $state
+                            ? '<a href="'.asset('storage/'.$state).'" target="_blank">View</a>'
                             : 'N/A'
                     )
                     ->html()
@@ -186,8 +185,7 @@ Forms\Components\TextInput::make('user_email')
                             'cancelled' => 'Cancelled',
                         ])->placeholder('All'),
                     ])
-                    ->query(fn (Builder $query, array $data) =>
-                        $data['status'] ? $query->where('status', $data['status']) : $query
+                    ->query(fn (Builder $query, array $data) => $data['status'] ? $query->where('status', $data['status']) : $query
                     ),
             ])
             ->actions([
@@ -200,8 +198,7 @@ Forms\Components\TextInput::make('user_email')
                         $record->save();
                         Mail::to($record->user->email)->send(new CertificateApprovedMail($record));
                     })
-                    ->visible(fn (Certificate $record) =>
-                        Auth::user()->hasAnyRole(['brgySecretary', 'super_admin']) && !$record->is_approved
+                    ->visible(fn (Certificate $record) => Auth::user()->hasAnyRole(['brgySecretary', 'super_admin']) && ! $record->is_approved
                     ),
 
                 Action::make('cancel')
@@ -213,8 +210,7 @@ Forms\Components\TextInput::make('user_email')
                         Mail::to($record->user->email)->send(new CertificateCancelledMail($record));
                     })
                     ->requiresConfirmation()
-                    ->visible(fn (Certificate $record) =>
-                        Auth::user()->hasAnyRole(['brgySecretary', 'super_admin']) && $record->status !== 'cancelled'
+                    ->visible(fn (Certificate $record) => Auth::user()->hasAnyRole(['brgySecretary', 'super_admin']) && $record->status !== 'cancelled'
                     ),
 
                 Tables\Actions\EditAction::make(),
